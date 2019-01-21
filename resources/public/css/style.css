@@ -1,0 +1,52 @@
+/* some style */
+
+body {
+  font-family: 'Open Sans', sans-serif;
+  background-color: #5e737f;
+  color: #fff;
+}
+
+.container {
+  max-width: 800px;
+  margin: auto;
+}
+
+button {
+  all: unset;
+  cursor: pointer;
+}
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  grid-gap: 10px;
+}
+
+.card  {
+  border-radius: 10px;
+  padding: 1em;
+  font-weight: 800;
+  font-size: larger;
+  height: 2em;
+  text-align: center;
+  background-color: #ffcf00;
+  color: #475f5c;
+  opacity: 0.5;
+  display: inline-block;
+}
+
+.card.unmatched {
+  opacity: 1;
+}
+
+.der {
+  background-color: #c9e4ca;
+}
+
+.die {
+  background-color: #93c8d4;
+}
+
+.das {
+  background-color: #95d1b4;
+}
