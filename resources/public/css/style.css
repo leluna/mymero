@@ -25,7 +25,7 @@ button {
 .card  {
   border-radius: 10px;
   padding: 1em;
-  font-weight: 800;
+  font-weight: bold;
   font-size: larger;
   height: 2em;
   text-align: center;
