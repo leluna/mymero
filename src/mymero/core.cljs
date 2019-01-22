@@ -6,10 +6,6 @@
 
 (enable-console-print!)
 
-;; calculate initial number of pairs based on the available screen size
-(defn initial-npairs []
-  6)
-
 (defn process-word [[word article]]
   (hash-map :word word
             :article article
@@ -35,11 +31,19 @@
 (defn match? [content1 content2]
   (= (:article content1) (:article content2)))
 
+(defn selected? [entry]
+  (:selected (val entry)))
+
+(defn check-for-match? [state]
+  (let [words (vals (:words state))]
+       (>= (count (filter #(:selected %) words)) 2)))
+
 
 ;; actions
 
 (defn select [id state]
-  (if (get-in state [:words id :unmatched])
+  (if (and (get-in state [:words id :unmatched])
+           (not (check-for-match? state)))
       (assoc-in state [:words id :selected] true)
       state))
 
@@ -58,7 +62,7 @@
                                            (when unmatched " unmatched")
                                            (when selected " selected"))
                                :onClick #(select! id)}
-                             (if (hidden? content) id word)]))
+                             (if (hidden? content) "" word)]))
 
 (defn mymero []
   [:div.game
@@ -71,9 +75,7 @@
          [card (first {94 {:word "Drucker" :article "der" :unmatched false :selected true}})]
          [card (first {95 {:word "Schlange" :article "die" :unmatched true :selected true}})]
          [card (first {96 {:word "Maedchen" :article "das" :unmatched true :selected false}})]
-         (map card (:words @app-state))
-         [:h3 (.-clientWidth (.-documentElement js/document))]
-         [:h3 (.-clientHeight (.-documentElement js/document))]]]])
+         (map card (:words @app-state))]]])
 
 (defn mount [el]
   (reagent/render-component [mymero] el))
