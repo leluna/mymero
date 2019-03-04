@@ -1,7 +1,11 @@
 (ns mymero.core-test
     (:require
-     [cljs.test :refer-macros [deftest is testing]]))
-     ;;[mymero.core :refer [multiply]]))
+     [cljs.test :refer-macros [deftest is testing]]
+     [mymero.core :as c]))
 
-#_(deftest multiply-test-2)
-  #_(is (= (* 75 10) (multiply 10 75)))
+(deftest create-card-test
+  (let [input ["word1" "der"]
+        output (c/create-card input)]
+       (is (= output
+              {:word "word1" :article "der"
+               :unmatched true :selected false}))))
