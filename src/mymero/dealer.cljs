@@ -29,7 +29,7 @@
 (defn take-pairs-balanced [npairs piles]
   (let [npiles    (count piles)
         np-rem    (rem npairs npiles)
-        np-thres  (quot npairs npiles)]
+        np-thres  (- npairs np-rem)]
        (->> (map evenify piles)
             (take-and-fill (* 2 np-thres) (* 2 np-rem))
             (flatten)
