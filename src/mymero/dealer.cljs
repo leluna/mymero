@@ -9,20 +9,22 @@
       (conj coll (rand-nth coll))))
 
 
-(defn taker [[n n-extra deposit results] pile]
-  (let [supply      (apply conj pile deposit)
-        result      (vec (take (+ n (min n-extra 1)) supply))
-        n-new       (- n (min (count supply) n))
-        n-extra-new (- n-extra (max 0 (- (count result) n)))
-        deposit-new (vec (drop (count result) supply))]
-       [n-new n-extra-new deposit-new (conj results result)]))
+(defn pair-taker [[np np-extra deposit results] pile]
+  (let [supply       (apply conj pile deposit)
+        np-to-take   (+ np (min np-extra 1))
+        result       (vec (take (* 2 np-to-take) supply))
+        np-taken     (quot (count result) 2)
+        np-new       (- np (min np-taken np))
+        np-extra-new (- np-extra (max 0 (- np-taken (- np np-new))))
+        deposit-new  (vec (drop (count result) supply))]
+       [np-new np-extra-new deposit-new (conj results result)]))
 
 
 ;; number -> vec[coll] -> vec[coll]
-(defn take-and-fill [n n-extra piles]
+(defn take-and-fill [np np-extra piles]
   (->> (sort-by (comp - count) piles)
-       (reduce taker
-               [n n-extra [] []])
+       (reduce pair-taker
+               [np np-extra [] []])
        (last)))
 
 ;; number -> vec[coll] -> vec[coll]
@@ -31,7 +33,7 @@
         np-rem    (rem npairs npiles)
         np-thres  (- npairs np-rem)]
        (->> (map evenify piles)
-            (take-and-fill (* 2 np-thres) (* 2 np-rem))
+            (take-and-fill np-thres np-rem)
             (flatten)
             (vec))))
 

@@ -13,17 +13,17 @@
   (is (= (dealer/evenify ["1" "1"]) ["1" "1"])
       (= (dealer/evenify ["1"]) ["1" "1"])))
 
-(deftest taker-test
-  (is (= (dealer/taker [1 0 [] []] ["1" "1" "1"])
-         [0 0 ["1" "1"] [["1"]]]))
-  (is (= (dealer/taker [1 2 [] []] ["1" "1" "1"])
-         [0 1 ["1"] [["1" "1"]]]))
-  (is (= (dealer/taker [2 2 [] []] ["1"])
-         [1 2 [] [["1"]]]))
-  (is (= (dealer/taker [3 0 ["1" "1"] []] ["2" "2"])
-         [0 0 ["1"] [["2" "2" "1"]]]))
-  (is (= (dealer/taker [1 1 ["1"] [["2" "2" "1"]]] ["3"])
-         [0 0 [] [["2" "2" "1"] ["3" "1"]]])))
+(deftest pair-taker-test
+  (is (= (dealer/pair-taker [1 0 [] []] ["1" "1" "1" "1"])
+         [0 0 ["1" "1"] [["1" "1"]]]))
+  (is (= (dealer/pair-taker [1 2 [] []] ["1" "1" "1" "1"])
+         [0 1 [] [["1" "1" "1" "1"]]]))
+  (is (= (dealer/pair-taker [2 2 [] []] ["1" "1"])
+         [1 2 [] [["1" "1"]]]))
+  (is (= (dealer/pair-taker [3 0 ["1" "1"] []] ["2" "2" "2" "2"])
+         [0 0 [] [["2" "2" "2" "2" "1" "1"]]]))
+  (is (= (dealer/pair-taker [1 1 ["1" "1"] [["2" "2" "1" "1"]]] ["3" "3"])
+         [0 0 [] [["2" "2" "1" "1"] ["3" "3" "1" "1"]]])))
 
 
 (defn count-fulfills [pred coll]
@@ -61,4 +61,4 @@
        (is (>= (count-fulfills #(contains % a) output) 2))
        (is (>= (count-fulfills #(contains % b) output) 4))
        (is (>= (count-fulfills #(contains % c) output) 4))
-       (is (= 16 (count output)))))
+       (is (= 14 (count output)))))
