@@ -7,7 +7,7 @@
 
 (enable-console-print!)
 
-; Calculate initial number of pairs based on the available screen size.
+;; Calculate initial number of pairs based on the available screen size.
 ;; The width and the height must be the same as the size of the card defined in
 ;; CSS.
 (defn initial-npairs []
@@ -34,7 +34,7 @@
 (defn create-deck [npairs word-article-pairs]
   (->> (map create-card word-article-pairs)
        (dealer/deal-cards npairs)
-       (map-indexed hash-map)))
+       (zipmap (range))))
 
 (defonce app-state
   (let [initial-theme (first (keys d/dict))
@@ -80,21 +80,22 @@
                                            (when unmatched " unmatched")
                                            (when selected " selected"))
                                :onClick #(select! id)}
-                             (if (hidden? card) id word)]))
+                             (if (hidden? card) "" word)]))
 
 (defn mymero []
   [:div.game
     [:div.container
       [:h1 (:theme @app-state)]
       [:div.cards
-         [card-component (first {91 {:word "Drucker" :article "der" :unmatchhed false :selected false}})]
-         [card-component (first {92 {:word "Schlange" :article "die" :unmatched false :selected false}})]
-         [card-component (first {93 {:word "Mädchen" :article "das" :unmatched false :selected false}})]
-         [card-component (first {94 {:word "Drucker" :article "der" :unmatched false :selected true}})]
-         [card-component (first {95 {:word "Schlange" :article "die" :unmatched true :selected true}})]
-         [card-component (first {96 {:word "Maedchen" :article "das" :unmatched true :selected false}})]
-         (map card-component (:deck @app-state))]
-      [:h3 (str (:deck @app-state))]]])
+         (map card-component (:deck @app-state))]]])
+
+(defn- test-cards []
+  (map card-component [(first {91 {:word "drucker" :article "der" :unmatchhed false :selected false}})
+                       (first {92 {:word "schlange" :article "die" :unmatched false :selected false}})
+                       (first {93 {:word "mädchen" :article "das" :unmatched false :selected false}})
+                       (first {94 {:word "drucker" :article "der" :unmatched false :selected true}})
+                       (first {95 {:word "schlange" :article "die" :unmatched true :selected true}})
+                       (first {96 {:word "maedchen" :article "das" :unmatched true :selected false}})]))
 
 (defn mount [el]
   (reagent/render-component [mymero] el))

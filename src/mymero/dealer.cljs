@@ -20,7 +20,7 @@
        [np-new np-extra-new deposit-new (conj results result)]))
 
 
-;; number -> vec[coll] -> vec[coll]
+;; number -> number -> vec[coll] -> vec
 (defn take-and-fill [np np-extra piles]
   (->> (sort-by (comp - count) piles)
        (reduce pair-taker
@@ -37,7 +37,7 @@
             (flatten)
             (vec))))
 
-;; number -> vec[card] -> list[card]
+;; number -> vec[card] -> seq[card]
 (defn deal-cards [npairs cards]
   (->> (group-by :article cards)
        (vals)

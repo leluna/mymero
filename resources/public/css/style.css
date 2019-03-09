@@ -2,8 +2,8 @@
 
 body {
   font-family: 'Open Sans', sans-serif;
-  background-color: #5e737f;
-  color: #fff;
+  background-color: #f6f6f0;
+  color: #5e737f;
 }
 
 .container {
@@ -18,7 +18,7 @@ button {
 
 .cards {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
   grid-gap: 10px;
 }
 
@@ -29,7 +29,7 @@ button {
   font-size: larger;
   height: 2em;
   text-align: center;
-  background-color: #ffcf00;
+  background-color: #d2d0c8;
   color: #475f5c;
   opacity: 0.5;
   display: inline-block;
