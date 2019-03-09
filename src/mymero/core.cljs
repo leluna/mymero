@@ -2,49 +2,67 @@
   (:require
    [goog.dom :as gdom]
    [reagent.core :as reagent :refer [atom]]
-   [mymero.dict :as d]))
+   [mymero.dict :as d]
+   [mymero.dealer :as dealer]))
 
 (enable-console-print!)
 
-(defn process-word [[word article]]
+; Calculate initial number of pairs based on the available screen size.
+;; The width and the height must be the same as the size of the card defined in
+;; CSS.
+(defn initial-npairs []
+ (let [avail-width (.-clientWidth (.-documentElement js/document))
+       avail-height (.-clientHeight (.-documentElement js/document))
+       max-width 800
+       width 200
+       height 30]
+      (-> (min max-width avail-width)
+          (quot width)
+          (* (quot (- avail-height 150) height))
+          (quot 2))))
+
+;; vec[string string] -> card
+(defn create-card [[word article]]
   (hash-map :word word
             :article article
             :unmatched true
             :selected false))
 
-(defn load-words [words]
-   (apply merge (map-indexed #(hash-map %1 (process-word %2)) words)))
+;; A "deck" is a map[number map] where each entry is a card-entry.
+;; The number is the ID of the item and the map is the card.
+;; number -> vec[vec[string string]] -> vec[map[number card]]
+(defn create-deck [npairs word-article-pairs]
+  (->> (map create-card word-article-pairs)
+       (dealer/deal-cards npairs)
+       (map-indexed hash-map)))
 
+(defonce app-state
+  (let [initial-theme (first (keys d/dict))
+        initial-n (initial-npairs)]
+       (atom {:theme initial-theme
+              :n     initial-n
+              :deck (create-deck initial-n (get d/dict initial-theme))})))
 
-
-(defonce app-state (atom {:theme (first (keys d/dict))
-                          :words (load-words (val (first d/dict)))}))
-
-(defn get-app-element []
-  (gdom/getElement "app"))
 
 ;; game logic
 
-(defn hidden? [content]
-  (and (:unmatched content) (not (:selected content))))
+(defn hidden? [card]
+  (and (:unmatched card) (not (:selected card))))
 
-(defn match? [content1 content2]
-  (= (:article content1) (:article content2)))
-
-(defn selected? [entry]
-  (:selected (val entry)))
+(defn match? [card1 card2]
+  (= (:article card1) (:article card2)))
 
 (defn check-for-match? [state]
-  (let [words (vals (:words state))]
-       (>= (count (filter #(:selected %) words)) 2)))
+  (let [entries (vals (:deck state))]
+       (>= (count (filter #(:selected %) entries)) 2)))
 
 
 ;; actions
 
 (defn select [id state]
-  (if (and (get-in state [:words id :unmatched])
+  (if (and (get-in state [:deck id :unmatched])
            (not (check-for-match? state)))
-      (assoc-in state [:words id :selected] true)
+      (assoc-in state [:deck id :selected] true)
       state))
 
 (defn select! [id]
@@ -54,31 +72,35 @@
 
 
 
-(defn card [card-entry]
+(defn card-component [card-entry]
  (let [id (key card-entry)
-       content (val card-entry)
-       {:keys [word article unmatched selected]} content]
-      ^{:key id}[:button.card {:class (str (when (not (hidden? content)) article)
+       card (val card-entry)
+       {:keys [word article unmatched selected]} card]
+      ^{:key id}[:button.card {:class (str (when (not (hidden? card)) article)
                                            (when unmatched " unmatched")
                                            (when selected " selected"))
                                :onClick #(select! id)}
-                             (if (hidden? content) "" word)]))
+                             (if (hidden? card) id word)]))
 
 (defn mymero []
   [:div.game
     [:div.container
       [:h1 (:theme @app-state)]
       [:div.cards
-         [card (first {91 {:word "Drucker" :article "der" :unmatchhed false :selected false}})]
-         [card (first {92 {:word "Schlange" :article "die" :unmatched false :selected false}})]
-         [card (first {93 {:word "Mädchen" :article "das" :unmatched false :selected false}})]
-         [card (first {94 {:word "Drucker" :article "der" :unmatched false :selected true}})]
-         [card (first {95 {:word "Schlange" :article "die" :unmatched true :selected true}})]
-         [card (first {96 {:word "Maedchen" :article "das" :unmatched true :selected false}})]
-         (map card (:words @app-state))]]])
+         [card-component (first {91 {:word "Drucker" :article "der" :unmatchhed false :selected false}})]
+         [card-component (first {92 {:word "Schlange" :article "die" :unmatched false :selected false}})]
+         [card-component (first {93 {:word "Mädchen" :article "das" :unmatched false :selected false}})]
+         [card-component (first {94 {:word "Drucker" :article "der" :unmatched false :selected true}})]
+         [card-component (first {95 {:word "Schlange" :article "die" :unmatched true :selected true}})]
+         [card-component (first {96 {:word "Maedchen" :article "das" :unmatched true :selected false}})]
+         (map card-component (:deck @app-state))]
+      [:h3 (str (:deck @app-state))]]])
 
 (defn mount [el]
   (reagent/render-component [mymero] el))
+
+(defn get-app-element []
+  (gdom/getElement "app"))
 
 (defn mount-app-element []
   (when-let [el (get-app-element)]
