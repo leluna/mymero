@@ -14,6 +14,7 @@
                          ["Besprechung", "die"],
                          ["Besprechungsraum", "der"],
                          ["Getränk", "das"],
+                         ["Excel", "das"],
                          ["Süßigkeit", "die"],
                          ["Chef", "der"],
                          ["Kantine", "die"],
@@ -30,6 +31,7 @@
                          ["Block", "der"],
                          ["Whiteboard", "das"],
                          ["Tastatur", "die"],
+                         ["Kugelschreiber", "der"]
                          ["Musik", "die"],
                          ["Kopfhörer", "der"],
                          ["Telefon", "das"],

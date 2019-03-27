@@ -25,8 +25,8 @@
 (defn create-card [[word article]]
   (hash-map :word word
             :article article
-            :unmatched true
-            :selected false))
+            :matched false
+            :revealed false))
 
 ;; A "deck" is a map[number map] where each entry is a card-entry.
 ;; The number is the ID of the item and the map is the card.
@@ -47,23 +47,45 @@
 ;; game logic
 
 (defn hidden? [card]
-  (and (:unmatched card) (not (:selected card))))
+  (and (not (:matched card)) (not (:revealed card))))
 
-(defn match? [card1 card2]
-  (= (:article card1) (:article card2)))
-
-(defn check-for-match? [state]
-  (let [entries (vals (:deck state))]
-       (>= (count (filter #(:selected %) entries)) 2)))
-
+(defn match? [cards]
+  (apply = (map #(:article %) cards)))
 
 ;; actions
 
+(defn revealed-cards [state]
+  (filter #(:revealed %) (vals (:deck state))))
+
+(defn update-values [m f & args]
+  (reduce (fn [r [k v]] (assoc r k (apply f v args))) {} m))
+
+(defn hide [card]
+  (assoc-in card [:revealed] false))
+
+(defn hide-all [state]
+  (update-in state [:deck] #(update-values % hide)))
+
+(defn match-revealed [card]
+  (if (:revealed card)
+      (assoc-in card [:matched] true)
+      card))
+
+(defn check-for-match [state]
+  (if (< (count (revealed-cards state)) 2)
+      state
+      (let [revealed-cards (revealed-cards state)]
+           (if (match? revealed-cards)
+               (-> (update-in state [:deck] #(update-values % match-revealed))
+                   (hide-all))
+               (hide-all state)))))
+
 (defn select [id state]
-  (if (and (get-in state [:deck id :unmatched])
-           (not (check-for-match? state)))
-      (assoc-in state [:deck id :selected] true)
-      state))
+  (let [card (get-in state [:deck id])]
+    (if (:matched card)
+        state
+        (-> (assoc-in state [:deck id :revealed] true)
+            (check-for-match)))))
 
 (defn select! [id]
   (swap! app-state #(select id %)))
@@ -75,10 +97,10 @@
 (defn card-component [card-entry]
  (let [id (key card-entry)
        card (val card-entry)
-       {:keys [word article unmatched selected]} card]
+       {:keys [word article matched revealed]} card]
       ^{:key id}[:button.card {:class (str (when (not (hidden? card)) article)
-                                           (when unmatched " unmatched")
-                                           (when selected " selected"))
+                                           (when (not matched) " unmatched")
+                                           (when revealed " selected"))
                                :onClick #(select! id)}
                              (if (hidden? card) "" word)]))
 
@@ -90,12 +112,12 @@
          (map card-component (:deck @app-state))]]])
 
 (defn- test-cards []
-  (map card-component [(first {91 {:word "drucker" :article "der" :unmatchhed false :selected false}})
-                       (first {92 {:word "schlange" :article "die" :unmatched false :selected false}})
-                       (first {93 {:word "mädchen" :article "das" :unmatched false :selected false}})
-                       (first {94 {:word "drucker" :article "der" :unmatched false :selected true}})
-                       (first {95 {:word "schlange" :article "die" :unmatched true :selected true}})
-                       (first {96 {:word "maedchen" :article "das" :unmatched true :selected false}})]))
+  (map card-component [(first {91 {:word "drucker" :article "der" :matchhed true :revealed false}})
+                       (first {92 {:word "schlange" :article "die" :matched false :revealed false}})
+                       (first {93 {:word "mädchen" :article "das" :matched true :revealed false}})
+                       (first {94 {:word "drucker" :article "der" :matched true :revealed true}})
+                       (first {95 {:word "schlange" :article "die" :matched false :revealed true}})
+                       (first {96 {:word "maedchen" :article "das" :matched false :revealed false}})]))
 
 (defn mount [el]
   (reagent/render-component [mymero] el))
